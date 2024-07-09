@@ -1,0 +1,48 @@
+import axios from "axios";
+import { useState, useEffect, useMemo } from "react";
+
+const useAxios = (reqConfig) => {
+  const localReqConfig = useMemo(() => {
+    return reqConfig || {};
+  }, [reqConfig]);
+
+  if (!localReqConfig.method) {
+    localReqConfig.method = "get";
+  }
+
+  let [state, setState] = useState({
+    data: [],
+    loading: true,
+    error: null,
+  }); // 가져올 데이터 담을 변수
+
+  useEffect(() => {
+    let getPosts = async () => {
+      // try / catch 문으로 에러 처리를 하며 axios를 이용해 서버에서 데이터를 가져옵니다.
+      try {
+        const res = await axios(localReqConfig);
+
+        setState((prev) => ({
+          ...prev,
+          data: res.data,
+        }));
+      } catch (err) {
+        setState((prev) => ({
+          ...prev,
+          error: err,
+        }));
+      } finally {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+        }));
+      }
+    };
+
+    getPosts();
+  }, [localReqConfig]); // 빈 배열로 컴포넌트가 Mount 될 때만 작동합니다.
+
+  return state;
+};
+
+export default useAxios;
